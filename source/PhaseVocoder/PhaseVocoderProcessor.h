@@ -2,9 +2,15 @@
 
 #include <BaseProcessor.h>
 
+#include <juce_dsp/juce_dsp.h>
+
+#include "OverlapSave.h"
+
 class PhaseVocoderProcessor final : public BaseProcessor
 {
 public:
+    static constexpr size_t WINDOW_SIZE { 1 << 12 };
+
     PhaseVocoderProcessor();
     ~PhaseVocoderProcessor() override;
 
@@ -18,7 +24,10 @@ public:
     juce::AudioProcessorEditor* createEditor() override;
 
 private:
-    float gain { 1.f };
+    OverlapSave olsLeft;
+    OverlapSave olsRight;
+
+    juce::dsp::WindowingFunction<float> windowFunction;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PhaseVocoderProcessor)
 };

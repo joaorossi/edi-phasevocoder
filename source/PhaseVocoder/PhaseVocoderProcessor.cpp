@@ -7,12 +7,14 @@ static const std::vector<mrta::ParameterInfo> params
 };
 
 PhaseVocoderProcessor::PhaseVocoderProcessor() :
-    BaseProcessor(params)
+    BaseProcessor(params),
+    olsLeft(WINDOW_SIZE),
+    olsRight(WINDOW_SIZE),
+    windowFunction(WINDOW_SIZE, juce::dsp::WindowingFunction<float>::hann)
 {
     paramMngr.registerParameterCallback("gain",
         [this] (float value, bool)
         {
-            gain = value;
         });
 }
 
@@ -20,13 +22,34 @@ PhaseVocoderProcessor::~PhaseVocoderProcessor()
 {
 }
 
-void PhaseVocoderProcessor::prepare(double, int)
+void PhaseVocoderProcessor::prepare(double, int maxBufferSize)
 {
+    olsLeft.prepare(static_cast<size_t>(maxBufferSize));
+    olsRight.prepare(static_cast<size_t>(maxBufferSize));
 }
 
 void PhaseVocoderProcessor::process(juce::AudioBuffer<float>& buffer, juce::MidiBuffer&)
 {
-    buffer.applyGain(gain);
+    const auto numSamples { static_cast<size_t>(buffer.getNumSamples()) };
+    const auto numChannels { static_cast<size_t>(buffer.getNumChannels()) };
+    std::array<float, WINDOW_SIZE> frameBuffer;
+
+    olsLeft.writeNewBuffer(buffer.getReadPointer(0), numSamples);
+    while (olsLeft.readReadyFrame(frameBuffer.data()))
+    {
+        windowFunction.multiplyWithWindowingTable(frameBuffer.data(), WINDOW_SIZE);
+    }
+
+    if (numChannels > 1)
+    {
+        olsRight.writeNewBuffer(buffer.getReadPointer(1), numSamples);
+        while (olsRight.readReadyFrame(frameBuffer.data()))
+        {
+            windowFunction.multiplyWithWindowingTable(frameBuffer.data(), WINDOW_SIZE);
+        }
+    }
+
+    buffer.clear();
 }
 
 juce::AudioProcessorEditor* PhaseVocoderProcessor::createEditor()
