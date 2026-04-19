@@ -3,7 +3,7 @@
 
 OverlapSave::OverlapSave(size_t windowSizeSamples) :
     windowSize { windowSizeSamples },
-    overlapSamples { windowSize / 4 }
+    hopSizeSamples { windowSize / 4 }
 {
 }
 
@@ -37,13 +37,20 @@ bool OverlapSave::readReadyFrame(float* frameBuffer)
 {
     const auto bufferSize { buffer.size() };
 
+    // calculate the number of samples available since the last frame was read
     auto numSamplesAvailable { (writeIndex + bufferSize) - readIndex };
     if (numSamplesAvailable >= bufferSize)
         numSamplesAvailable -= bufferSize;
 
     bool frameAvailable { false };
-    if (numSamplesAvailable >= overlapSamples)
+    if (numSamplesAvailable >= hopSizeSamples)
     {
+        // advance read index to the end of the current frame avaiable
+        readIndex += hopSizeSamples;
+        if (readIndex >= bufferSize)
+            readIndex -= bufferSize;
+
+        // calculate the current frame starting index
         auto startFrameIndex { (readIndex + bufferSize) - windowSize };
         if (startFrameIndex >= bufferSize)
             startFrameIndex -= bufferSize;
@@ -54,17 +61,13 @@ bool OverlapSave::readReadyFrame(float* frameBuffer)
         std::memcpy(&frameBuffer[0], &buffer[startFrameIndex], readSamples0 * sizeof(float));
         std::memcpy(&frameBuffer[readSamples0], &buffer[0], readSamples1 * sizeof(float));
 
-        readIndex += overlapSamples;
-        if (readIndex >= bufferSize)
-            readIndex -= bufferSize;
-
         frameAvailable = true;
     }
 
     return frameAvailable;
 }
 
-void OverlapSave::setOverlapSamples(size_t _overlapSamples)
+void OverlapSave::setHopSizeSamples(size_t newHopSizeSamples)
 {
-    overlapSamples = _overlapSamples;
+    hopSizeSamples = std::max(newHopSizeSamples, windowSize);
 }

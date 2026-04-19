@@ -20,14 +20,13 @@ public:
     // If there is no frame ready, FALSE will be returned and nothing will be be written to 'frameBuffer'.
     bool readReadyFrame(float* frameBuffer);
 
-    // Set the amount of frame overlap in samples.
-    void setOverlapSamples(size_t overlapSamples);
+    void setHopSizeSamples(size_t hopSizeSamples);
 
 private:
     std::vector<float> buffer;
 
     const size_t windowSize;
-    size_t overlapSamples;
+    size_t hopSizeSamples;
     size_t writeIndex { 0 };
     size_t readIndex { 0 };
 
