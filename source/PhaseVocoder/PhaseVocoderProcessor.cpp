@@ -10,6 +10,8 @@ PhaseVocoderProcessor::PhaseVocoderProcessor() :
     BaseProcessor(params),
     olsLeft(WINDOW_SIZE),
     olsRight(WINDOW_SIZE),
+    olaLeft(WINDOW_SIZE),
+    olaRight(WINDOW_SIZE),
     windowFunction(WINDOW_SIZE, juce::dsp::WindowingFunction<float>::hann)
 {
     paramMngr.registerParameterCallback("gain",
@@ -26,6 +28,9 @@ void PhaseVocoderProcessor::prepare(double, int maxBufferSize)
 {
     olsLeft.prepare(static_cast<size_t>(maxBufferSize));
     olsRight.prepare(static_cast<size_t>(maxBufferSize));
+
+    olaLeft.prepare(static_cast<size_t>(maxBufferSize));
+    olaRight.prepare(static_cast<size_t>(maxBufferSize));
 }
 
 void PhaseVocoderProcessor::process(juce::AudioBuffer<float>& buffer, juce::MidiBuffer&)
@@ -34,11 +39,22 @@ void PhaseVocoderProcessor::process(juce::AudioBuffer<float>& buffer, juce::Midi
     const auto numChannels { static_cast<size_t>(buffer.getNumChannels()) };
     std::array<float, WINDOW_SIZE> frameBuffer;
 
+
     olsLeft.writeNewBuffer(buffer.getReadPointer(0), numSamples);
     while (olsLeft.readReadyFrame(frameBuffer.data()))
     {
         windowFunction.multiplyWithWindowingTable(frameBuffer.data(), WINDOW_SIZE);
+        olaLeft.writeNewFrame(frameBuffer.data());
     }
+
+    const auto readSamplesLeft { olaLeft.readyReadBuffer(buffer.getWritePointer(0), numSamples) };
+    if ((readSamplesLeft > 0) && (readSamplesLeft < numSamples))
+    {
+        const auto offsetSamples { numSamples - readSamplesLeft };
+        std::memmove(buffer.getWritePointer(0) + offsetSamples, buffer.getReadPointer(0), offsetSamples * sizeof(float));
+        std::memset(buffer.getWritePointer(0), 0, offsetSamples * sizeof(float));
+    }
+
 
     if (numChannels > 1)
     {
@@ -46,10 +62,17 @@ void PhaseVocoderProcessor::process(juce::AudioBuffer<float>& buffer, juce::Midi
         while (olsRight.readReadyFrame(frameBuffer.data()))
         {
             windowFunction.multiplyWithWindowingTable(frameBuffer.data(), WINDOW_SIZE);
+            olaRight.writeNewFrame(frameBuffer.data());
+        }
+
+        const auto readSamplesRight { olaRight.readyReadBuffer(buffer.getWritePointer(0), numSamples) };
+        if ((readSamplesRight > 0) && (readSamplesRight < numSamples))
+        {
+            const auto offsetSamples { numSamples - readSamplesRight };
+            std::memmove(buffer.getWritePointer(1) + offsetSamples, buffer.getReadPointer(1), offsetSamples * sizeof(float));
+            std::memset(buffer.getWritePointer(1), 0, offsetSamples * sizeof(float));
         }
     }
-
-    buffer.clear();
 }
 
 juce::AudioProcessorEditor* PhaseVocoderProcessor::createEditor()

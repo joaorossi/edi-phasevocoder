@@ -54,6 +54,7 @@ add_plugin(PhaseVocoder
         ${source_dir}/PhaseVocoder/PhaseVocoderProcessor.cpp
         ${source_dir}/PhaseVocoder/PhaseVocoderEditor.cpp
         ${source_dir}/DSP/OverlapSave.cpp
+        ${source_dir}/DSP/OverlapAdd.cpp
     INCLUDE_DIRS
         ${source_dir}/PhaseVocoder
         ${dsp_dir}
