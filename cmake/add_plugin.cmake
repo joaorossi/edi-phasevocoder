@@ -1,3 +1,11 @@
+# Download JUCE directly to build dir
+include(FetchContent)
+FetchContent_Declare(juce
+    GIT_REPOSITORY https://github.com/juce-framework/JUCE.git
+    GIT_TAG 8.0.12
+)
+FetchContent_MakeAvailable(juce)
+
 # This function adds a JUCE plugin target to this project
 # Arguments:
 #   - TARGET: The name of your plugin target, this allows you to identify which of your plugins will be built.
@@ -33,7 +41,7 @@ function(add_plugin target)
         MICROPHONE_PERMISSION_ENABLED TRUE
         COMPANY_COPYRIGHT ${company_copyright}
         COMPANY_NAME ${company_name}
-        FORMATS ${plugin_formats}
+        FORMATS VST3 AU Standalone
         PLUGIN_NAME ${AP_PLUGIN_NAME}
         PLUGIN_MANUFACTURER_CODE ${company_code}
         PLUGIN_CODE ${AP_PROD_CODE}
@@ -48,18 +56,18 @@ function(add_plugin target)
     # Add parameter utils
     target_sources(${target}
         PRIVATE
-            ${source_dir}/Parameter/GenericParameterEditor.cpp
-            ${source_dir}/Parameter/ParameterComponents.cpp
-            ${source_dir}/Parameter/ParameterFIFO.cpp
-            ${source_dir}/Parameter/ParameterInfo.cpp
-            ${source_dir}/Parameter/ParameterManager.cpp
-            ${source_dir}/Parameter/BaseProcessor.cpp
+            ${CMAKE_SOURCE_DIR}/source/Parameter/GenericParameterEditor.cpp
+            ${CMAKE_SOURCE_DIR}/source/Parameter/ParameterComponents.cpp
+            ${CMAKE_SOURCE_DIR}/source/Parameter/ParameterFIFO.cpp
+            ${CMAKE_SOURCE_DIR}/source/Parameter/ParameterInfo.cpp
+            ${CMAKE_SOURCE_DIR}/source/Parameter/ParameterManager.cpp
+            ${CMAKE_SOURCE_DIR}/source/Parameter/BaseProcessor.cpp
             ${AP_SOURCES}
     )
 
     target_include_directories(${target}
         PRIVATE
-            ${source_dir}/Parameter
+            ${CMAKE_SOURCE_DIR}/source/Parameter
             ${AP_INCLUDE_DIRS}
     )
 

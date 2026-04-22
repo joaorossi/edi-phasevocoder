@@ -12,26 +12,9 @@ set(CMAKE_OSX_DEPLOYMENT_TARGET "10.15")
 # Main project
 project(EDI_AUDIO VERSION 0.0.1 LANGUAGES C CXX)
 
-# Download JUCE directly to build dir
-include(FetchContent)
-FetchContent_Declare(juce
-    GIT_REPOSITORY https://github.com/juce-framework/JUCE.git
-    GIT_TAG 8.0.12
-)
-FetchContent_MakeAvailable(juce)
-
 # Get add_plugin function
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(add_plugin)
-
-# Source directory
-set(source_dir ${CMAKE_CURRENT_SOURCE_DIR}/source)
-
-# DSP directory
-set(dsp_dir ${source_dir}/DSP)
-
-# Plugin formats to build
-set(plugin_formats VST3 AU Standalone)
 
 
 ### Plugins
@@ -51,11 +34,11 @@ add_plugin(PhaseVocoder
     PROD_NAME "PhaseVocoder"
     PROD_CODE "Phvc"
     SOURCES
-        ${source_dir}/PhaseVocoder/PhaseVocoderProcessor.cpp
-        ${source_dir}/PhaseVocoder/PhaseVocoderEditor.cpp
-        ${source_dir}/DSP/OverlapSave.cpp
-        ${source_dir}/DSP/OverlapAdd.cpp
+        ${CMAKE_SOURCE_DIR}/source/PhaseVocoder/PhaseVocoderProcessor.cpp
+        ${CMAKE_SOURCE_DIR}/source/PhaseVocoder/PhaseVocoderEditor.cpp
+        ${CMAKE_SOURCE_DIR}/source/DSP/OverlapSave.cpp
+        ${CMAKE_SOURCE_DIR}/source/DSP/OverlapAdd.cpp
     INCLUDE_DIRS
-        ${source_dir}/PhaseVocoder
-        ${dsp_dir}
+        ${CMAKE_SOURCE_DIR}/source/PhaseVocoder
+        ${CMAKE_SOURCE_DIR}/source/DSP
 )
