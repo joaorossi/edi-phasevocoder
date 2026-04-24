@@ -12,6 +12,8 @@ PhaseVocoderProcessor::PhaseVocoderProcessor() :
     olsRight(WINDOW_SIZE),
     olaLeft(WINDOW_SIZE),
     olaRight(WINDOW_SIZE),
+    phaseLeft(WINDOW_SIZE),
+    phaseRight(WINDOW_SIZE),
     windowFunction(WINDOW_SIZE, juce::dsp::WindowingFunction<float>::hann)
 {
     paramMngr.registerParameterCallback("gain",
@@ -37,14 +39,17 @@ void PhaseVocoderProcessor::process(juce::AudioBuffer<float>& buffer, juce::Midi
 {
     const auto numSamples { static_cast<size_t>(buffer.getNumSamples()) };
     const auto numChannels { static_cast<size_t>(buffer.getNumChannels()) };
-    std::array<float, WINDOW_SIZE> frameBuffer;
+    std::array<float, WINDOW_SIZE> analysisFrameBuffer;
+    std::array<float, WINDOW_SIZE> synthesisFrameBuffer;
 
 
     olsLeft.writeNewBuffer(buffer.getReadPointer(0), numSamples);
-    while (olsLeft.readReadyFrame(frameBuffer.data()))
+    while (olsLeft.readReadyFrame(analysisFrameBuffer.data()))
     {
-        windowFunction.multiplyWithWindowingTable(frameBuffer.data(), WINDOW_SIZE);
-        olaLeft.writeNewFrame(frameBuffer.data());
+        windowFunction.multiplyWithWindowingTable(analysisFrameBuffer.data(), WINDOW_SIZE);
+        phaseLeft.processFrame(synthesisFrameBuffer.data(), analysisFrameBuffer.data());
+        windowFunction.multiplyWithWindowingTable(synthesisFrameBuffer.data(), WINDOW_SIZE);
+        olaLeft.writeNewFrame(synthesisFrameBuffer.data());
     }
 
     const auto readSamplesLeft { olaLeft.readyReadBuffer(buffer.getWritePointer(0), numSamples) };
@@ -59,13 +64,15 @@ void PhaseVocoderProcessor::process(juce::AudioBuffer<float>& buffer, juce::Midi
     if (numChannels > 1)
     {
         olsRight.writeNewBuffer(buffer.getReadPointer(1), numSamples);
-        while (olsRight.readReadyFrame(frameBuffer.data()))
+        while (olsRight.readReadyFrame(analysisFrameBuffer.data()))
         {
-            windowFunction.multiplyWithWindowingTable(frameBuffer.data(), WINDOW_SIZE);
-            olaRight.writeNewFrame(frameBuffer.data());
+            windowFunction.multiplyWithWindowingTable(analysisFrameBuffer.data(), WINDOW_SIZE);
+            phaseRight.processFrame(synthesisFrameBuffer.data(), analysisFrameBuffer.data());
+            windowFunction.multiplyWithWindowingTable(synthesisFrameBuffer.data(), WINDOW_SIZE);
+            olaRight.writeNewFrame(synthesisFrameBuffer.data());
         }
 
-        const auto readSamplesRight { olaRight.readyReadBuffer(buffer.getWritePointer(0), numSamples) };
+        const auto readSamplesRight { olaRight.readyReadBuffer(buffer.getWritePointer(1), numSamples) };
         if ((readSamplesRight > 0) && (readSamplesRight < numSamples))
         {
             const auto offsetSamples { numSamples - readSamplesRight };

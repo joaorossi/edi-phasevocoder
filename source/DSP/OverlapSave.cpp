@@ -1,8 +1,8 @@
 #include "OverlapSave.h"
 #include <algorithm>
 
-OverlapSave::OverlapSave(size_t windowSizeSamples) :
-    windowSize { windowSizeSamples },
+OverlapSave::OverlapSave(size_t _windowSize) :
+    windowSize { _windowSize },
     hopSizeSamples { windowSize / 4 }
 {
 }

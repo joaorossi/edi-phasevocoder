@@ -5,7 +5,7 @@
 class OverlapSave
 {
 public:
-    OverlapSave(size_t windowSizeSamples);
+    OverlapSave(size_t windowSize);
     ~OverlapSave();
 
     // Reset indices, reallocate and clear buffer.

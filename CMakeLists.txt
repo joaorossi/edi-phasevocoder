@@ -38,6 +38,7 @@ add_plugin(PhaseVocoder
         ${CMAKE_SOURCE_DIR}/source/PhaseVocoder/PhaseVocoderEditor.cpp
         ${CMAKE_SOURCE_DIR}/source/DSP/OverlapSave.cpp
         ${CMAKE_SOURCE_DIR}/source/DSP/OverlapAdd.cpp
+        ${CMAKE_SOURCE_DIR}/source/DSP/Phase.cpp
     INCLUDE_DIRS
         ${CMAKE_SOURCE_DIR}/source/PhaseVocoder
         ${CMAKE_SOURCE_DIR}/source/DSP

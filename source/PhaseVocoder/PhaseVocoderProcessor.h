@@ -6,6 +6,7 @@
 
 #include "OverlapSave.h"
 #include "OverlapAdd.h"
+#include "Phase.h"
 
 class PhaseVocoderProcessor final : public BaseProcessor
 {
@@ -30,6 +31,9 @@ private:
 
     OverlapAdd olaLeft;
     OverlapAdd olaRight;
+
+    Phase phaseLeft;
+    Phase phaseRight;
 
     juce::dsp::WindowingFunction<float> windowFunction;
 
