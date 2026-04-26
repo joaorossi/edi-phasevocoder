@@ -8,10 +8,14 @@ public:
     OverlapAdd(size_t windowSize);
     ~OverlapAdd();
 
+    // Reset indices, reallocate and clear buffer.
     void prepare(size_t maxBufferSize);
 
+    // Writes a new buffer of audio.
     void writeNewFrame(const float* frameBuffer);
 
+    // Tries to read 'length' samples.
+    // Return the nnumber of samples actually read, which will always be less than 'length'.
     size_t readyReadBuffer(float* outputBuffer, size_t length);
 
     void setHopSizeSamples(size_t hopSizeSamples);
