@@ -59,6 +59,7 @@ size_t OverlapAdd::readyReadBuffer(float* outputBuffer, size_t length)
     return samplesToRead;
 }
 
-void OverlapAdd::setHopSizeSamples(size_t hopSizeSamples)
+void OverlapAdd::setHopSizeSamples(size_t newHopSizeSamples)
 {
+    hopSizeSamples = std::min(newHopSizeSamples, windowSize);
 }

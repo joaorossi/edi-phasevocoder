@@ -69,5 +69,5 @@ bool OverlapSave::readReadyFrame(float* frameBuffer)
 
 void OverlapSave::setHopSizeSamples(size_t newHopSizeSamples)
 {
-    hopSizeSamples = std::max(newHopSizeSamples, windowSize);
+    hopSizeSamples = std::min(newHopSizeSamples, windowSize);
 }

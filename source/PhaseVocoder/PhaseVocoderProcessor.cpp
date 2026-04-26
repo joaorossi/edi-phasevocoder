@@ -3,7 +3,7 @@
 
 static const std::vector<mrta::ParameterInfo> params
 {
-    mrta::ParameterInfo("gain", "Gain", "X", 0.5f, 0.f, 1.f, 0.001f, 1.f)
+    mrta::ParameterInfo("ratio", "Ratio", "X", 1.f, 0.5f, 2.f, 0.001f, 1.f)
 };
 
 PhaseVocoderProcessor::PhaseVocoderProcessor() :
@@ -16,9 +16,16 @@ PhaseVocoderProcessor::PhaseVocoderProcessor() :
     phaseRight(WINDOW_SIZE),
     windowFunction(WINDOW_SIZE, juce::dsp::WindowingFunction<float>::hann)
 {
-    paramMngr.registerParameterCallback("gain",
+    paramMngr.registerParameterCallback("ratio",
         [this] (float value, bool)
         {
+            const auto auxRatio = value;
+            analysisHopSize = std::llrintf(BASE_HOP_SIZE / auxRatio);
+            ratio = static_cast<float>(synthesisHopSize) / static_cast<float>(analysisHopSize);
+            olsLeft.setHopSizeSamples(analysisHopSize);
+            olsRight.setHopSizeSamples(analysisHopSize);
+            phaseLeft.setAnalysisHopSize(analysisHopSize);
+            phaseRight.setAnalysisHopSize(analysisHopSize);
         });
 }
 
@@ -28,6 +35,12 @@ PhaseVocoderProcessor::~PhaseVocoderProcessor()
 
 void PhaseVocoderProcessor::prepare(double, int maxBufferSize)
 {
+    resamplerBufferLeft.resize(2 * maxBufferSize);
+    resamplerBufferRight.resize(2 * maxBufferSize);
+
+    std::fill(resamplerBufferLeft.begin(), resamplerBufferLeft.end(), 0.f);
+    std::fill(resamplerBufferRight.begin(), resamplerBufferRight.end(), 0.f);
+
     olsLeft.prepare(static_cast<size_t>(maxBufferSize));
     olsRight.prepare(static_cast<size_t>(maxBufferSize));
 
@@ -36,6 +49,20 @@ void PhaseVocoderProcessor::prepare(double, int maxBufferSize)
 
     phaseLeft.reset();
     phaseRight.reset();
+
+    resamplerLeft.reset();
+    resamplerRight.reset();
+
+    olsLeft.setHopSizeSamples(analysisHopSize);
+    olsRight.setHopSizeSamples(analysisHopSize);
+
+    olaLeft.setHopSizeSamples(synthesisHopSize);
+    olaRight.setHopSizeSamples(synthesisHopSize);
+
+    phaseLeft.setAnalysisHopSize(analysisHopSize);
+    phaseLeft.setSynthesisHopSize(synthesisHopSize);
+    phaseRight.setAnalysisHopSize(analysisHopSize);
+    phaseRight.setSynthesisHopSize(synthesisHopSize);
 }
 
 void PhaseVocoderProcessor::process(juce::AudioBuffer<float>& buffer, juce::MidiBuffer&)
@@ -45,6 +72,7 @@ void PhaseVocoderProcessor::process(juce::AudioBuffer<float>& buffer, juce::Midi
     std::array<float, WINDOW_SIZE> analysisFrameBuffer;
     std::array<float, WINDOW_SIZE> synthesisFrameBuffer;
 
+    const auto resampleLength { std::llrintf(numSamples * ratio) };
 
     olsLeft.writeNewBuffer(buffer.getReadPointer(0), numSamples);
     while (olsLeft.readReadyFrame(analysisFrameBuffer.data()))
@@ -55,14 +83,9 @@ void PhaseVocoderProcessor::process(juce::AudioBuffer<float>& buffer, juce::Midi
         olaLeft.writeNewFrame(synthesisFrameBuffer.data());
     }
 
-    const auto readSamplesLeft { olaLeft.readyReadBuffer(buffer.getWritePointer(0), numSamples) };
-    if ((readSamplesLeft > 0) && (readSamplesLeft < numSamples))
-    {
-        const auto offsetSamples { numSamples - readSamplesLeft };
-        std::memmove(buffer.getWritePointer(0) + offsetSamples, buffer.getReadPointer(0), offsetSamples * sizeof(float));
-        std::memset(buffer.getWritePointer(0), 0, offsetSamples * sizeof(float));
-    }
-
+    std::fill(resamplerBufferLeft.begin(), resamplerBufferLeft.end(), 0.f);
+    const auto readSamplesLeft { olaLeft.readyReadBuffer(resamplerBufferLeft.data(), resampleLength) };
+    resamplerLeft.process(buffer.getWritePointer(0), numSamples, resamplerBufferLeft.data(), resampleLength);
 
     if (numChannels > 1)
     {
@@ -75,13 +98,9 @@ void PhaseVocoderProcessor::process(juce::AudioBuffer<float>& buffer, juce::Midi
             olaRight.writeNewFrame(synthesisFrameBuffer.data());
         }
 
-        const auto readSamplesRight { olaRight.readyReadBuffer(buffer.getWritePointer(1), numSamples) };
-        if ((readSamplesRight > 0) && (readSamplesRight < numSamples))
-        {
-            const auto offsetSamples { numSamples - readSamplesRight };
-            std::memmove(buffer.getWritePointer(1) + offsetSamples, buffer.getReadPointer(1), offsetSamples * sizeof(float));
-            std::memset(buffer.getWritePointer(1), 0, offsetSamples * sizeof(float));
-        }
+        std::fill(resamplerBufferRight.begin(), resamplerBufferRight.end(), 0.f);
+        const auto readSamplesRight { olaRight.readyReadBuffer(resamplerBufferRight.data(), resampleLength) };
+        resamplerRight.process(buffer.getWritePointer(1), numSamples, resamplerBufferRight.data(), resampleLength);
     }
 }
 

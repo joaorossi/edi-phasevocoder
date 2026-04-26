@@ -7,11 +7,13 @@
 #include "OverlapSave.h"
 #include "OverlapAdd.h"
 #include "Phase.h"
+#include "Resampler.h"
 
 class PhaseVocoderProcessor final : public BaseProcessor
 {
 public:
     static constexpr size_t WINDOW_SIZE { 1 << 12 };
+    static constexpr size_t BASE_HOP_SIZE { WINDOW_SIZE / 4 };
 
     PhaseVocoderProcessor();
     ~PhaseVocoderProcessor() override;
@@ -35,7 +37,17 @@ private:
     Phase phaseLeft;
     Phase phaseRight;
 
+    Resampler resamplerLeft;
+    Resampler resamplerRight;
+
+    float ratio { 1.f };
+    size_t analysisHopSize { BASE_HOP_SIZE };
+    size_t synthesisHopSize { BASE_HOP_SIZE };;
+
     juce::dsp::WindowingFunction<float> windowFunction;
+
+    std::vector<float> resamplerBufferLeft;
+    std::vector<float> resamplerBufferRight;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PhaseVocoderProcessor)
 };
