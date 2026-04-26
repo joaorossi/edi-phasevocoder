@@ -33,6 +33,9 @@ void PhaseVocoderProcessor::prepare(double, int maxBufferSize)
 
     olaLeft.prepare(static_cast<size_t>(maxBufferSize));
     olaRight.prepare(static_cast<size_t>(maxBufferSize));
+
+    phaseLeft.reset();
+    phaseRight.reset();
 }
 
 void PhaseVocoderProcessor::process(juce::AudioBuffer<float>& buffer, juce::MidiBuffer&)
