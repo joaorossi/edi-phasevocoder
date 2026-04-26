@@ -83,7 +83,8 @@ function(add_plugin target)
             JUCE_USE_OGGVORBIS=0 JUCE_USE_WINDOWS_MEDIA_FORMAT=0
             JUCE_WEB_BROWSER=0 JUCE_VST3_CAN_REPLACE_VST2=0
             JUCE_SILENCE_XCODE_15_LINKER_WARNING=1
-            JUCE_WIN_PER_MONITOR_DPI_AWARE=1 WIN32_LEAN_AND_MEAN
+            JUCE_WIN_PER_MONITOR_DPI_AWARE=1
+            WIN32_LEAN_AND_MEAN=1 _USE_MATH_DEFINES=1
     )
 
     target_link_libraries(${target}
