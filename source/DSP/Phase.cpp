@@ -58,7 +58,7 @@ void Phase::processFrame(float* outputFrame, const float* inputFrame)
         const auto omegaInst { omegaK + kappa / static_cast<float>(analysisHopSize) };
 
         const auto synthesisCurrPhase { synthesisPrevPhaseBuffer[k] + synthesisHopSize * omegaInst };
-        synthesisPrevPhaseBuffer[k] = synthesisCurrPhase;
+        synthesisPrevPhaseBuffer[k] = (synthesisCurrPhase >= static_cast<float>(2 * M_PI)) ? synthesisCurrPhase - static_cast<float>(2 * M_PI): synthesisCurrPhase;
 
         const std::complex<float> synthesisCurrBin { std::polar(std::abs(analysisCurrBin), synthesisCurrPhase) };
         synthesisFftBuffer[binReal] = synthesisCurrBin.real();
