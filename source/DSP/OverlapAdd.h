@@ -27,6 +27,7 @@ private:
     size_t hopSizeSamples;
     size_t writeIndex { 0 };
     size_t readIndex { 0 };
+    size_t bufferMask;
 
     OverlapAdd() = delete;
     OverlapAdd(const OverlapAdd&) = delete;

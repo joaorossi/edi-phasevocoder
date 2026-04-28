@@ -13,7 +13,7 @@ class PhaseVocoderProcessor final : public BaseProcessor
 {
 public:
     static constexpr size_t WINDOW_SIZE { 1 << 12 };
-    static constexpr size_t BASE_HOP_SIZE { WINDOW_SIZE / 4 };
+    static constexpr size_t BASE_HOP_SIZE { WINDOW_SIZE / 8 };
 
     PhaseVocoderProcessor();
     ~PhaseVocoderProcessor() override;
@@ -37,14 +37,16 @@ private:
     Phase phaseLeft;
     Phase phaseRight;
 
-    Resampler resamplerLeft;
-    Resampler resamplerRight;
+    float resampleFracAcc { 0.f };
 
     float ratio { 1.f };
     size_t analysisHopSize { BASE_HOP_SIZE };
     size_t synthesisHopSize { BASE_HOP_SIZE };;
 
     juce::dsp::WindowingFunction<float> windowFunction;
+
+    juce::LagrangeInterpolator resamplerLeft;
+    juce::LagrangeInterpolator resamplerRight;
 
     std::vector<float> resamplerBufferLeft;
     std::vector<float> resamplerBufferRight;

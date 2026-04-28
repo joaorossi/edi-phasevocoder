@@ -1,9 +1,12 @@
 #include "OverlapAdd.h"
 
+#include <juce_core/juce_core.h>
+
 OverlapAdd::OverlapAdd(size_t _windowSize) :
     windowSize { _windowSize },
     hopSizeSamples { windowSize / 4 }
 {
+    jassert(juce::isPowerOfTwo(windowSize));
 }
 
 OverlapAdd::~OverlapAdd()
@@ -12,9 +15,12 @@ OverlapAdd::~OverlapAdd()
 
 void OverlapAdd::prepare(size_t maxBufferSize)
 {
-    buffer.resize(2 * windowSize + maxBufferSize);
+    buffer.resize(windowSize << 3);
     std::fill(buffer.begin(), buffer.end(), 0.f);
-    writeIndex = readIndex = 0;
+
+    writeIndex = 0;
+    readIndex = 0;
+    bufferMask = buffer.size() - 1;
 }
 
 void OverlapAdd::writeNewFrame(const float* frameBuffer)
@@ -30,17 +36,14 @@ void OverlapAdd::writeNewFrame(const float* frameBuffer)
         buffer[n] += frameBuffer[writeSamples0 + n];
 
     writeIndex += hopSizeSamples;
-    if (writeIndex >= bufferSize)
-        writeIndex -= bufferSize;
+    writeIndex &= bufferMask;
 }
 
 size_t OverlapAdd::readyReadBuffer(float* outputBuffer, size_t length)
 {
     const auto bufferSize { buffer.size() };
 
-    auto numSamplesAvailable { (writeIndex + bufferSize) - readIndex };
-    if (numSamplesAvailable >= bufferSize)
-        numSamplesAvailable -= bufferSize;
+    auto numSamplesAvailable { ((writeIndex + bufferSize) - readIndex) & bufferMask };
 
     const auto samplesToRead { std::min(numSamplesAvailable, length) };
     const auto readSamples0 { std::min(bufferSize - readIndex, samplesToRead) };
@@ -53,13 +56,12 @@ size_t OverlapAdd::readyReadBuffer(float* outputBuffer, size_t length)
     std::memset(&buffer[0], 0, readSamples1 * sizeof(float));
 
     readIndex += samplesToRead;
-    if (readIndex >= bufferSize)
-        readIndex -= bufferSize;
+    readIndex &= bufferMask;
 
     return samplesToRead;
 }
 
 void OverlapAdd::setHopSizeSamples(size_t newHopSizeSamples)
 {
-    hopSizeSamples = std::min(newHopSizeSamples, windowSize);
+    hopSizeSamples = newHopSizeSamples;
 }
