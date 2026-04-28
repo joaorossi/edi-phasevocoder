@@ -8,7 +8,7 @@ static constexpr T Log2(T x)
 
 static float Wrap2pi(float x)
 {
-    return x - static_cast<float>(2 * M_PI) * std::round(x * static_cast<float>(M_2_PI));
+    return x - static_cast<float>(2 * M_PI) * std::round(x * static_cast<float>(1.0 / (2 * M_PI)));
 }
 
 Phase::Phase(size_t _windowSize) :
