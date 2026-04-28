@@ -7,13 +7,12 @@
 #include "OverlapSave.h"
 #include "OverlapAdd.h"
 #include "Phase.h"
-#include "Resampler.h"
 
 class PhaseVocoderProcessor final : public BaseProcessor
 {
 public:
-    static constexpr size_t WINDOW_SIZE { 1 << 12 };
-    static constexpr size_t BASE_HOP_SIZE { WINDOW_SIZE / 8 };
+    static constexpr size_t WINDOW_SIZE { 1 << 13 };
+    static constexpr size_t BASE_HOP_SIZE { WINDOW_SIZE / 16 };
 
     PhaseVocoderProcessor();
     ~PhaseVocoderProcessor() override;
