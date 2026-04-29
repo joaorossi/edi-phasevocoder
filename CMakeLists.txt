@@ -25,6 +25,8 @@ set(company_copyright "EDI Audio Technologies")
 set(company_code "EDIa")
 set(company_bundle_id "com.EDIAudio")
 
+# Helper variable for source dir
+set(source_dir ${CMAKE_SOURCE_DIR}/source)
 
 # Add "PhaseVocoder" plugin target
 add_plugin(PhaseVocoder
@@ -34,12 +36,12 @@ add_plugin(PhaseVocoder
     PROD_NAME "PhaseVocoder"
     PROD_CODE "Phvc"
     SOURCES
-        ${CMAKE_SOURCE_DIR}/source/PhaseVocoder/PhaseVocoderProcessor.cpp
-        ${CMAKE_SOURCE_DIR}/source/PhaseVocoder/PhaseVocoderEditor.cpp
-        ${CMAKE_SOURCE_DIR}/source/DSP/OverlapSave.cpp
-        ${CMAKE_SOURCE_DIR}/source/DSP/OverlapAdd.cpp
-        ${CMAKE_SOURCE_DIR}/source/DSP/Phase.cpp
+        ${source_dir}/PhaseVocoder/PhaseVocoderProcessor.cpp
+        ${source_dir}/PhaseVocoder/PhaseVocoderEditor.cpp
+        ${source_dir}/DSP/OverlapSave.cpp
+        ${source_dir}/DSP/OverlapAdd.cpp
+        ${source_dir}/DSP/Phase.cpp
     INCLUDE_DIRS
-        ${CMAKE_SOURCE_DIR}/source/PhaseVocoder
-        ${CMAKE_SOURCE_DIR}/source/DSP
+        ${source_dir}/PhaseVocoder
+        ${source_dir}/DSP
 )
