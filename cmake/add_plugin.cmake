@@ -92,6 +92,10 @@ function(add_plugin target)
             juce::juce_audio_utils
             juce::juce_dsp
             ${AP_LINK_LIBS}
+        PUBLIC
+            juce::juce_recommended_config_flags
+            juce::juce_recommended_lto_flags
+            juce::juce_recommended_warning_flags
     )
 
     # Xcode 15 linker workaround
