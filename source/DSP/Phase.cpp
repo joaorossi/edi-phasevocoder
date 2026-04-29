@@ -18,8 +18,8 @@ Phase::Phase(size_t _windowSize) :
     synthesisFftBuffer(windowSize * 2),
     analysisPrevPhaseBuffer(windowSize / 2 + 1),
     synthesisPrevPhaseBuffer(windowSize / 2 + 1),
-    synthesisHopSize { windowSize / 4 },
-    analysisHopSize { windowSize / 4 }
+    analysisHopSize { windowSize / 4 },
+    synthesisHopSize { windowSize / 4 }
 {
     reset();
 }

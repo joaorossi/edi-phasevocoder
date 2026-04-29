@@ -13,7 +13,8 @@ PhaseVocoderEditor::PhaseVocoderEditor(PhaseVocoderProcessor& p) :
 {
     addAndMakeVisible(paramEditor);
 
-    setSize(WIDTH, pluginProcessor.getParamMngr().getParameters().size() * PARAM_HEIGHT);
+    const auto HEIGHT { static_cast<int>(pluginProcessor.getParamMngr().getParameters().size() * PARAM_HEIGHT) };
+    setSize(WIDTH, HEIGHT);
 }
 
 PhaseVocoderEditor::~PhaseVocoderEditor()
