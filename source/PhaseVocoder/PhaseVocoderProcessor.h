@@ -36,19 +36,18 @@ private:
     Phase phaseLeft;
     Phase phaseRight;
 
-    float resampleFracAcc { 0.f };
-
-    float ratio { 1.f };
-    size_t analysisHopSize { BASE_HOP_SIZE };
-    size_t synthesisHopSize { BASE_HOP_SIZE };;
-
     juce::dsp::WindowingFunction<float> windowFunction;
 
     juce::LagrangeInterpolator resamplerLeft;
     juce::LagrangeInterpolator resamplerRight;
 
-    std::vector<float> resamplerBufferLeft;
-    std::vector<float> resamplerBufferRight;
+    double ratio { 1.0 };
+    size_t analysisHopSize { BASE_HOP_SIZE };
+    size_t synthesisHopSize { BASE_HOP_SIZE };
+
+    double resampleFracAcc { 0.f };
+
+    std::vector<float> resamplerBuffer;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PhaseVocoderProcessor)
 };

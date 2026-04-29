@@ -20,8 +20,8 @@ PhaseVocoderProcessor::PhaseVocoderProcessor() :
         [this] (float value, bool)
         {
             const auto auxRatio = value;
-            analysisHopSize = static_cast<size_t>(std::ceil(BASE_HOP_SIZE / auxRatio));
-            ratio = static_cast<float>(synthesisHopSize) / static_cast<float>(analysisHopSize);
+            analysisHopSize = static_cast<size_t>(std::floor(BASE_HOP_SIZE / auxRatio));
+            ratio = static_cast<double>(synthesisHopSize) / static_cast<double>(analysisHopSize);
 
             olsLeft.setHopSizeSamples(analysisHopSize);
             olsRight.setHopSizeSamples(analysisHopSize);
@@ -36,17 +36,11 @@ PhaseVocoderProcessor::~PhaseVocoderProcessor()
 
 void PhaseVocoderProcessor::prepare(double, int maxBufferSize)
 {
-    resamplerBufferLeft.resize(2 * maxBufferSize);
-    resamplerBufferRight.resize(2 * maxBufferSize);
+    olsLeft.prepare();
+    olsRight.prepare();
 
-    std::fill(resamplerBufferLeft.begin(), resamplerBufferLeft.end(), 0.f);
-    std::fill(resamplerBufferRight.begin(), resamplerBufferRight.end(), 0.f);
-
-    olsLeft.prepare(static_cast<size_t>(maxBufferSize));
-    olsRight.prepare(static_cast<size_t>(maxBufferSize));
-
-    olaLeft.prepare(static_cast<size_t>(maxBufferSize));
-    olaRight.prepare(static_cast<size_t>(maxBufferSize));
+    olaLeft.prepare();
+    olaRight.prepare();
 
     phaseLeft.reset();
     phaseRight.reset();
@@ -65,7 +59,10 @@ void PhaseVocoderProcessor::prepare(double, int maxBufferSize)
     phaseRight.setAnalysisHopSize(analysisHopSize);
     phaseRight.setSynthesisHopSize(synthesisHopSize);
 
-    resampleFracAcc = 0.f;
+    resampleFracAcc = 0.0;
+
+    resamplerBuffer.resize(2 * maxBufferSize);
+    std::fill(resamplerBuffer.begin(), resamplerBuffer.end(), 0.f);
 }
 
 void PhaseVocoderProcessor::process(juce::AudioBuffer<float>& buffer, juce::MidiBuffer&)
@@ -78,7 +75,7 @@ void PhaseVocoderProcessor::process(juce::AudioBuffer<float>& buffer, juce::Midi
     auto resampleLengthFrac { numSamples * ratio };
     auto resampleLength { static_cast<size_t>(std::floor(resampleLengthFrac)) };
     resampleFracAcc += resampleLengthFrac - resampleLength;
-    if (resampleFracAcc > 1.f)
+    if (resampleFracAcc >= 1.0)
     {
         ++resampleLength;
         --resampleFracAcc;
@@ -95,8 +92,9 @@ void PhaseVocoderProcessor::process(juce::AudioBuffer<float>& buffer, juce::Midi
         olaLeft.writeNewFrame(synthesisFrameBuffer.data());
     }
 
-    olaLeft.readyReadBuffer(resamplerBufferLeft.data(), resampleLength);
-    resamplerLeft.process(resamplerRatio, resamplerBufferLeft.data(), buffer.getWritePointer(0), numSamples, resampleLength, 0);
+    olaLeft.readyReadBuffer(resamplerBuffer.data(), resampleLength);
+    resamplerLeft.process(resamplerRatio, resamplerBuffer.data(), buffer.getWritePointer(0),
+        static_cast<int>(numSamples), static_cast<int>(resampleLength), 1);
 
     if (numChannels > 1)
     {
@@ -109,8 +107,9 @@ void PhaseVocoderProcessor::process(juce::AudioBuffer<float>& buffer, juce::Midi
             olaRight.writeNewFrame(synthesisFrameBuffer.data());
         }
 
-        olaRight.readyReadBuffer(resamplerBufferRight.data(), resampleLength);
-        resamplerRight.process(resamplerRatio, resamplerBufferRight.data(), buffer.getWritePointer(1), numSamples, resampleLength, 0);
+        olaRight.readyReadBuffer(resamplerBuffer.data(), resampleLength);
+        resamplerRight.process(resamplerRatio, resamplerBuffer.data(), buffer.getWritePointer(1),
+            static_cast<int>(numSamples), static_cast<int>(resampleLength), 1);
     }
 }
 
