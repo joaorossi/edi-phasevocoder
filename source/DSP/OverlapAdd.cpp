@@ -13,7 +13,7 @@ OverlapAdd::~OverlapAdd()
 {
 }
 
-void OverlapAdd::prepare(size_t maxBufferSize)
+void OverlapAdd::prepare()
 {
     buffer.resize(windowSize << 3);
     std::fill(buffer.begin(), buffer.end(), 0.f);

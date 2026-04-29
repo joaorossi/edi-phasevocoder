@@ -14,7 +14,7 @@ OverlapSave::~OverlapSave()
 {
 }
 
-void OverlapSave::prepare(size_t maxBufferSize)
+void OverlapSave::prepare()
 {
     buffer.resize(windowSize << 3);
     std::fill(buffer.begin(), buffer.end(), 0.f);

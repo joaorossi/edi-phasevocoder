@@ -9,7 +9,7 @@ public:
     ~OverlapAdd();
 
     // Reset indices, reallocate and clear buffer.
-    void prepare(size_t maxBufferSize);
+    void prepare();
 
     // Writes a new buffer of audio.
     void writeNewFrame(const float* frameBuffer);
