@@ -1,5 +1,8 @@
 #include "BaseProcessor.h"
 
+namespace mrta
+{
+
 BaseProcessor::BaseProcessor(const std::vector<mrta::ParameterInfo>& params) :
     AudioProcessor(BusesProperties()
         .withInput("Input",  juce::AudioChannelSet::stereo(), true)
@@ -10,6 +13,11 @@ BaseProcessor::BaseProcessor(const std::vector<mrta::ParameterInfo>& params) :
 
 BaseProcessor::~BaseProcessor()
 {
+}
+
+void BaseProcessor::registerParameterCallback(const juce::String& parameterID, ParameterManager::Callback&& cb)
+{
+    paramMngr.registerParameterCallback(parameterID, std::move(cb));
 }
 
 void BaseProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
@@ -73,3 +81,5 @@ void BaseProcessor::setCurrentProgram(int) { }
 const juce::String BaseProcessor::getProgramName(int) { return {}; }
 void BaseProcessor::changeProgramName(int, const juce::String&) { }
 //==============================================================================
+
+}

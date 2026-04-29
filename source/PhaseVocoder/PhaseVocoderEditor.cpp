@@ -9,11 +9,11 @@ static const int PARAM_HEIGHT { 100 };
 PhaseVocoderEditor::PhaseVocoderEditor(PhaseVocoderProcessor& p) :
     juce::AudioProcessorEditor(p),
     pluginProcessor { p },
-    paramEditor(pluginProcessor.getParamMngr(), PARAM_HEIGHT)
+    paramEditor(pluginProcessor.getParameterManager(), PARAM_HEIGHT)
 {
     addAndMakeVisible(paramEditor);
 
-    const auto HEIGHT { static_cast<int>(pluginProcessor.getParamMngr().getParameters().size() * PARAM_HEIGHT) };
+    const auto HEIGHT { static_cast<int>(pluginProcessor.getParameterManager().getParameters().size() * PARAM_HEIGHT) };
     setSize(WIDTH, HEIGHT);
 }
 

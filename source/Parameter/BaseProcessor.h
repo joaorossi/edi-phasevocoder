@@ -4,6 +4,9 @@
 
 #include "ParameterManager.h"
 
+namespace mrta
+{
+
 class BaseProcessor : public juce::AudioProcessor
 {
 public:
@@ -17,7 +20,16 @@ public:
     virtual void process(juce::AudioBuffer<float>&, juce::MidiBuffer&) = 0;
 
     // Helper to access the parameter manager
-    mrta::ParameterManager& getParamMngr() { return paramMngr; }
+    mrta::ParameterManager& getParameterManager() { return paramMngr; }
+
+
+protected:
+    // Register a parameter callback
+    void registerParameterCallback(const juce::String& parameterID, ParameterManager::Callback&& cb);
+
+
+private:
+    mrta::ParameterManager paramMngr;
 
     // JUCE overriden methods
     //==============================================================================
@@ -50,12 +62,11 @@ public:
     void changeProgramName (int index, const juce::String& newName) override;
     //==============================================================================
 
-protected:
-    mrta::ParameterManager paramMngr;
-
     BaseProcessor() = delete;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(BaseProcessor)
 };
+
+}
 
 #ifndef CREATE_PLUGIN
     #define CREATE_PLUGIN(processor) \

@@ -7,7 +7,7 @@ static const std::vector<mrta::ParameterInfo> params
 };
 
 PhaseVocoderProcessor::PhaseVocoderProcessor() :
-    BaseProcessor(params),
+    mrta::BaseProcessor(params),
     olsLeft(WINDOW_SIZE),
     olsRight(WINDOW_SIZE),
     olaLeft(WINDOW_SIZE),
@@ -16,7 +16,7 @@ PhaseVocoderProcessor::PhaseVocoderProcessor() :
     phaseRight(WINDOW_SIZE),
     windowFunction(WINDOW_SIZE, juce::dsp::WindowingFunction<float>::hann)
 {
-    paramMngr.registerParameterCallback("ratio",
+    registerParameterCallback("ratio",
         [this] (float value, bool)
         {
             const auto auxRatio = value;

@@ -8,7 +8,7 @@
 #include "OverlapAdd.h"
 #include "Phase.h"
 
-class PhaseVocoderProcessor final : public BaseProcessor
+class PhaseVocoderProcessor final : public mrta::BaseProcessor
 {
 public:
     static constexpr size_t WINDOW_SIZE { 1 << 13 };
