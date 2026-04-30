@@ -28,6 +28,20 @@ set(company_bundle_id "com.EDIAudio")
 # Helper variable for source dir
 set(source_dir ${CMAKE_SOURCE_DIR}/source)
 
+# Add "LadderFilter" plugin target
+add_plugin(LadderFilter
+    VERSION 0.0.1
+    SYNTH FALSE
+    PLUGIN_NAME "Ladder Filter"
+    PROD_NAME "LadderFilter"
+    PROD_CODE "Ldft"
+    SOURCES
+        ${source_dir}/LadderFilter/LadderFilterProcessor.cpp
+        ${source_dir}/LadderFilter/LadderFilterEditor.cpp
+    INCLUDE_DIRS
+        ${source_dir}/LadderFilter
+)
+
 # Add "PhaseVocoder" plugin target
 add_plugin(PhaseVocoder
     VERSION 0.0.1
