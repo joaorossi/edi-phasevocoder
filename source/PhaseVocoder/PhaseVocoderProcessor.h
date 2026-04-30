@@ -27,11 +27,11 @@ public:
     juce::AudioProcessorEditor* createEditor() override;
 
 private:
-    OverlapSave olsLeft;
-    OverlapSave olsRight;
+    OverlapSave overlapSaveLeft;
+    OverlapSave overlapSaveRight;
 
-    OverlapAdd olaLeft;
-    OverlapAdd olaRight;
+    OverlapAdd overlapAddLeft;
+    OverlapAdd overlapAddRight;
 
     Phase phaseLeft;
     Phase phaseRight;

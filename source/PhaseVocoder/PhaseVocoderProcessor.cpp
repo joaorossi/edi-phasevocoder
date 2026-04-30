@@ -8,10 +8,10 @@ static const std::vector<mrta::ParameterInfo> params
 
 PhaseVocoderProcessor::PhaseVocoderProcessor() :
     mrta::BaseProcessor(params),
-    olsLeft(WINDOW_SIZE),
-    olsRight(WINDOW_SIZE),
-    olaLeft(WINDOW_SIZE),
-    olaRight(WINDOW_SIZE),
+    overlapSaveLeft(WINDOW_SIZE),
+    overlapSaveRight(WINDOW_SIZE),
+    overlapAddLeft(WINDOW_SIZE),
+    overlapAddRight(WINDOW_SIZE),
     phaseLeft(WINDOW_SIZE),
     phaseRight(WINDOW_SIZE),
     windowFunction(WINDOW_SIZE, juce::dsp::WindowingFunction<float>::hann)
@@ -23,8 +23,8 @@ PhaseVocoderProcessor::PhaseVocoderProcessor() :
             analysisHopSize = static_cast<size_t>(std::floor(BASE_HOP_SIZE / auxRatio));
             ratio = static_cast<double>(synthesisHopSize) / static_cast<double>(analysisHopSize);
 
-            olsLeft.setHopSizeSamples(analysisHopSize);
-            olsRight.setHopSizeSamples(analysisHopSize);
+            overlapSaveLeft.setHopSizeSamples(analysisHopSize);
+            overlapSaveRight.setHopSizeSamples(analysisHopSize);
             phaseLeft.setAnalysisHopSize(analysisHopSize);
             phaseRight.setAnalysisHopSize(analysisHopSize);
         });
@@ -36,11 +36,11 @@ PhaseVocoderProcessor::~PhaseVocoderProcessor()
 
 void PhaseVocoderProcessor::prepare(double, int maxBufferSize)
 {
-    olsLeft.prepare();
-    olsRight.prepare();
+    overlapSaveLeft.prepare();
+    overlapSaveRight.prepare();
 
-    olaLeft.prepare();
-    olaRight.prepare();
+    overlapAddLeft.prepare();
+    overlapAddRight.prepare();
 
     phaseLeft.reset();
     phaseRight.reset();
@@ -48,11 +48,11 @@ void PhaseVocoderProcessor::prepare(double, int maxBufferSize)
     resamplerLeft.reset();
     resamplerRight.reset();
 
-    olsLeft.setHopSizeSamples(analysisHopSize);
-    olsRight.setHopSizeSamples(analysisHopSize);
+    overlapSaveLeft.setHopSizeSamples(analysisHopSize);
+    overlapSaveRight.setHopSizeSamples(analysisHopSize);
 
-    olaLeft.setHopSizeSamples(synthesisHopSize);
-    olaRight.setHopSizeSamples(synthesisHopSize);
+    overlapAddLeft.setHopSizeSamples(synthesisHopSize);
+    overlapAddRight.setHopSizeSamples(synthesisHopSize);
 
     phaseLeft.setAnalysisHopSize(analysisHopSize);
     phaseLeft.setSynthesisHopSize(synthesisHopSize);
@@ -83,31 +83,31 @@ void PhaseVocoderProcessor::process(juce::AudioBuffer<float>& buffer, juce::Midi
 
     const auto resamplerRatio { static_cast<double>(resampleLength) / static_cast<double>(numSamples) };
 
-    olsLeft.writeNewBuffer(buffer.getReadPointer(0), numSamples);
-    while (olsLeft.readReadyFrame(analysisFrameBuffer.data()))
+    overlapSaveLeft.writeNewBuffer(buffer.getReadPointer(0), numSamples);
+    while (overlapSaveLeft.readReadyFrame(analysisFrameBuffer.data()))
     {
         windowFunction.multiplyWithWindowingTable(analysisFrameBuffer.data(), WINDOW_SIZE);
         phaseLeft.processFrame(synthesisFrameBuffer.data(), analysisFrameBuffer.data());
         windowFunction.multiplyWithWindowingTable(synthesisFrameBuffer.data(), WINDOW_SIZE);
-        olaLeft.writeNewFrame(synthesisFrameBuffer.data());
+        overlapAddLeft.writeNewFrame(synthesisFrameBuffer.data());
     }
 
-    olaLeft.readyReadBuffer(resamplerBuffer.data(), resampleLength);
+    overlapAddLeft.readyReadBuffer(resamplerBuffer.data(), resampleLength);
     resamplerLeft.process(resamplerRatio, resamplerBuffer.data(), buffer.getWritePointer(0),
         static_cast<int>(numSamples), static_cast<int>(resampleLength), 1);
 
     if (numChannels > 1)
     {
-        olsRight.writeNewBuffer(buffer.getReadPointer(1), numSamples);
-        while (olsRight.readReadyFrame(analysisFrameBuffer.data()))
+        overlapSaveRight.writeNewBuffer(buffer.getReadPointer(1), numSamples);
+        while (overlapSaveRight.readReadyFrame(analysisFrameBuffer.data()))
         {
             windowFunction.multiplyWithWindowingTable(analysisFrameBuffer.data(), WINDOW_SIZE);
             phaseRight.processFrame(synthesisFrameBuffer.data(), analysisFrameBuffer.data());
             windowFunction.multiplyWithWindowingTable(synthesisFrameBuffer.data(), WINDOW_SIZE);
-            olaRight.writeNewFrame(synthesisFrameBuffer.data());
+            overlapAddRight.writeNewFrame(synthesisFrameBuffer.data());
         }
 
-        olaRight.readyReadBuffer(resamplerBuffer.data(), resampleLength);
+        overlapAddRight.readyReadBuffer(resamplerBuffer.data(), resampleLength);
         resamplerRight.process(resamplerRatio, resamplerBuffer.data(), buffer.getWritePointer(1),
             static_cast<int>(numSamples), static_cast<int>(resampleLength), 1);
     }
