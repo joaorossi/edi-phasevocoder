@@ -1,19 +1,19 @@
 #pragma once
 
-#include "LadderFilterProcessor.h"
+#include "BaseProcessor.h"
 #include "GenericParameterEditor.h"
 
 class LadderFilterEditor final : public juce::AudioProcessorEditor
 {
 public:
-    LadderFilterEditor(LadderFilterProcessor&);
+    LadderFilterEditor(mrta::BaseProcessor&);
     ~LadderFilterEditor() override;
 
     void paint(juce::Graphics&) override;
     void resized() override;
 
 private:
-    LadderFilterProcessor& pluginProcessor;
+    mrta::BaseProcessor& pluginProcessor;
 
     mrta::GenericParameterEditor paramEditor;
 

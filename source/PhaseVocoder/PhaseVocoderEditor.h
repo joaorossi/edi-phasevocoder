@@ -1,19 +1,19 @@
 #pragma once
 
-#include "PhaseVocoderProcessor.h"
+#include "BaseProcessor.h"
 #include "GenericParameterEditor.h"
 
 class PhaseVocoderEditor final : public juce::AudioProcessorEditor
 {
 public:
-    PhaseVocoderEditor(PhaseVocoderProcessor&);
+    PhaseVocoderEditor(mrta::BaseProcessor&);
     ~PhaseVocoderEditor() override;
 
     void paint(juce::Graphics&) override;
     void resized() override;
 
 private:
-    PhaseVocoderProcessor& pluginProcessor;
+    mrta::BaseProcessor& pluginProcessor;
 
     mrta::GenericParameterEditor paramEditor;
 
